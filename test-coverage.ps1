@@ -14,11 +14,18 @@ if (-not $coverageFile) {
     exit 1
 }
 
+# Restore the report generator tool
+dotnet tool restore --tool-manifest ./src/.config/dotnet-tools.json
+
 # Generate the report
-reportgenerator `
+Push-Location ./src
+
+dotnet tool run reportgenerator `
   -reports:$coverageFile.FullName `
-  -targetdir:"coverage" `
+  -targetdir:"../coverage" `
   -reporttypes:"HtmlInline_AzurePipelines;TextSummary"
+
+Pop-Location
 
 # Open report in default browser
 $indexPath = Join-Path "coverage" "index.html"
@@ -30,5 +37,5 @@ if ($IsWindows) {
 } elseif ($IsLinux) {
     xdg-open $indexPath
 } else {
-    Write-Warning "Platform not detected - open coverage-report/index.html manually"
+    Write-Warning "Platform not detected - open coverage/index.html manually"
 }
