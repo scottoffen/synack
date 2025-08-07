@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using Synack.Certificates;
 using Synack.Exceptions;
@@ -12,6 +13,36 @@ namespace Synack;
 public class ListenerOptions
 {
     private X509Certificate2? _certificate;
+
+    /// <summary>
+    /// Gets or sets the IP address the handler should bind to when listening for incoming connections.
+    /// </summary>
+    /// <remarks>
+    /// This address determines which network interfaces the server will accept connections from:
+    /// <list type="bullet">
+    ///     <item>
+    ///         <see cref="System.Net.IPAddress.Any"/> (default) binds to all available IPv4 interfaces (0.0.0.0).
+    ///         This allows external clients on the network to connect.
+    ///     </item>
+    ///     <item>
+    ///         <see cref="System.Net.IPAddress.Loopback"/> binds only to the local loopback interface (127.0.0.1),
+    ///         preventing external connections — useful for development or internal services.
+    ///     </item>
+    ///     <item>
+    ///         You may also bind to a specific interface IP (e.g., 192.168.1.10) to restrict connections to that address.
+    ///     </item>
+    ///     <item>
+    ///         For IPv6, use <see cref="System.Net.IPAddress.IPv6Any"/> or <see cref="System.Net.IPAddress.IPv6Loopback"/>.
+    ///     </item>
+    /// </list>
+    /// <para>If a hostname needs to be used (e.g., "localhost" or "example.com"), resolve it using DNS and assign the
+    /// resulting IP address to this property before starting the handler.
+    /// </para>
+    /// <para>
+    /// The default value is <see cref="System.Net.IPAddress.Any"/>.
+    /// </para>
+    /// </remarks>
+    public IPAddress BindAddress { get; set; } = IPAddress.Any;
 
     /// <summary>
     /// Gets or sets the X.509 certificate used for TLS encryption.
