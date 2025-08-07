@@ -1,4 +1,5 @@
 using System.Text;
+using Synack.Protocol;
 
 namespace Synack.Tests;
 
