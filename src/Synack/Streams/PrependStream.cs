@@ -62,6 +62,30 @@ internal sealed class PrependStream : Stream
     public override void Flush() => _inner.Flush();
 
     /// <summary>
+    /// Disposes the stream and the underlying stream.
+    /// </summary>
+    /// <param name="disposing"></param>
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _inner.Dispose();
+        }
+
+        base.Dispose(disposing);
+    }
+
+    /// <summary>
+    /// Asynchronously releases the unmanaged resources used by the Stream.
+    /// </summary>
+    /// <returns></returns>
+    public override async ValueTask DisposeAsync()
+    {
+        await _inner.DisposeAsync().ConfigureAwait(false);
+        await base.DisposeAsync().ConfigureAwait(false);
+    }
+
+    /// <summary>
     /// Reads data from the prefix buffer first, then continues with the underlying stream if space allows.
     /// </summary>
     /// <param name="buffer">The destination buffer.</param>
