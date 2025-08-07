@@ -2,6 +2,7 @@ using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Authentication;
 using Synack.Protocol;
+using Synack.Streams;
 
 namespace Synack.Tests;
 
@@ -17,7 +18,7 @@ public class ProtocolNegotiatorTests
         var negotiator = new ProtocolNegotiator(detector.Object, loggerFactory: null);
         var stream = new MemoryStream();
 
-        var (resultStream, version) = await negotiator.NegotiateAsync(stream, cert: null);
+        var (resultStream, version) = await negotiator.NegotiateAsync(stream);
 
         version.ShouldBe(ProtocolVersion.Http1);
         resultStream.ShouldBeOfType<PrependStream>();
@@ -33,7 +34,7 @@ public class ProtocolNegotiatorTests
         var negotiator = new ProtocolNegotiator(detector.Object, loggerFactory: null);
         var stream = new MemoryStream();
 
-        var (resultStream, version) = await negotiator.NegotiateAsync(stream, cert: null);
+        var (resultStream, version) = await negotiator.NegotiateAsync(stream);
 
         version.ShouldBe(ProtocolVersion.Http2);
         resultStream.ShouldBeOfType<PrependStream>();
@@ -49,7 +50,7 @@ public class ProtocolNegotiatorTests
         var negotiator = new ProtocolNegotiator(detector.Object, loggerFactory: null);
         var stream = new MemoryStream();
 
-        var (resultStream, version) = await negotiator.NegotiateAsync(stream, cert: null);
+        var (resultStream, version) = await negotiator.NegotiateAsync(stream);
 
         version.ShouldBe(ProtocolVersion.Unknown);
         resultStream.ShouldBeOfType<PrependStream>();
@@ -69,8 +70,8 @@ public class ProtocolNegotiatorTests
     [InlineData("Http11", ProtocolVersion.Http1)]
     [Trait("Category", "Integration")]
     public async Task NegotiateAsync_ReturnsCorrectVersion_BasedOnAlpn(
-    string alpnProtocol,
-    ProtocolVersion expectedVersion)
+        string alpnProtocol,
+        ProtocolVersion expectedVersion)
     {
         var cert = TestCertificateFactory.Create("localhost");
         var detector = new Mock<IProtocolDetector>().Object;
@@ -84,9 +85,23 @@ public class ProtocolNegotiatorTests
         var serverTask = Task.Run(async () =>
         {
             using var serverClient = await listener.AcceptTcpClientAsync();
-            var serverStream = serverClient.GetStream();
+            using var serverNetworkStream = serverClient.GetStream();
+            using var serverSslStream = new SslStream(serverNetworkStream, leaveInnerStreamOpen: false);
 
-            var (stream, version) = await negotiator.NegotiateAsync(serverStream, cert);
+            var serverOptions = new SslServerAuthenticationOptions
+            {
+                ServerCertificate = cert,
+                ApplicationProtocols =
+                [
+                    SslApplicationProtocol.Http2,
+                SslApplicationProtocol.Http11
+                ],
+                EnabledSslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13
+            };
+
+            await serverSslStream.AuthenticateAsServerAsync(serverOptions, CancellationToken.None);
+
+            var (stream, version) = await negotiator.NegotiateAsync(serverSslStream);
 
             version.ShouldBe(expectedVersion);
             stream.ShouldBeOfType<SslStream>();
@@ -134,9 +149,23 @@ public class ProtocolNegotiatorTests
         var serverTask = Task.Run(async () =>
         {
             using var serverClient = await listener.AcceptTcpClientAsync();
-            var serverStream = serverClient.GetStream();
+            using var serverNetworkStream = serverClient.GetStream();
+            using var serverSslStream = new SslStream(serverNetworkStream, leaveInnerStreamOpen: false);
 
-            var (stream, version) = await negotiator.NegotiateAsync(serverStream, cert);
+            var serverOptions = new SslServerAuthenticationOptions
+            {
+                ServerCertificate = cert,
+                ApplicationProtocols =
+                [
+                    SslApplicationProtocol.Http2,
+                SslApplicationProtocol.Http11
+                ],
+                EnabledSslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13
+            };
+
+            await serverSslStream.AuthenticateAsServerAsync(serverOptions, CancellationToken.None);
+
+            var (stream, version) = await negotiator.NegotiateAsync(serverSslStream);
 
             version.ShouldBe(ProtocolVersion.Unknown);
             stream.ShouldBeOfType<SslStream>();
@@ -153,7 +182,7 @@ public class ProtocolNegotiatorTests
             leaveInnerStreamOpen: false,
             userCertificateValidationCallback: (_, _, _, _) => true);
 
-        // Don't set ApplicationProtocols at all
+        // No ApplicationProtocols => no ALPN
         var clientOptions = new SslClientAuthenticationOptions
         {
             TargetHost = "localhost",

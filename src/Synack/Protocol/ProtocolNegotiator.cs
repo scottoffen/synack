@@ -1,7 +1,6 @@
 ﻿using System.Net.Security;
-using System.Security.Authentication;
-using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.Logging;
+using Synack.Streams;
 
 namespace Synack.Protocol;
 
@@ -30,41 +29,23 @@ internal sealed class ProtocolNegotiator : IProtocolNegotiator
     /// by reading the initial bytes from the stream.
     /// </remarks>
     /// <param name="stream"></param>
-    /// <param name="cert"></param>
     /// <param name="token"></param>
     /// <returns></returns>
     public async Task<(Stream stream, ProtocolVersion version)> NegotiateAsync(
         Stream stream,
-        X509Certificate2? cert,
         CancellationToken token = default
     )
     {
-        var version = ProtocolVersion.Unknown;
-
-        if (cert is null)
+        if (stream is not SslStream sslStream)
         {
             var buffer = new byte[ProtocolDetector.MaxInitialBytes];
-            version = await _protocolDetector.DetectProtocolAsync(stream, buffer, token);
+            var detectedVersion = await _protocolDetector.DetectProtocolAsync(stream, buffer, token);
             var prependStream = new PrependStream(buffer, stream);
-            return (prependStream, version);
+            return (prependStream, detectedVersion);
         }
 
-        var sslStream = new SslStream(stream, leaveInnerStreamOpen: false);
-        var options = new SslServerAuthenticationOptions
-        {
-            ServerCertificate = cert,
-            EnabledSslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13,
-            ApplicationProtocols =
-            [
-                SslApplicationProtocol.Http2,
-                SslApplicationProtocol.Http11
-            ]
-        };
-
-        await sslStream.AuthenticateAsServerAsync(options, token);
         var negotiated = sslStream.NegotiatedApplicationProtocol;
-
-        version = negotiated switch
+        var version = negotiated switch
         {
             var p when p == SslApplicationProtocol.Http2 => ProtocolVersion.Http2,
             var p when p == SslApplicationProtocol.Http11 => ProtocolVersion.Http1,
