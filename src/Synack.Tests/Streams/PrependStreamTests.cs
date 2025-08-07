@@ -5,6 +5,39 @@ namespace Synack.Tests.Streams;
 
 public class PrependStreamTests
 {
+    private class DelegatingStream : Stream
+    {
+        public Action? OnDispose { get; set; }
+        public Func<ValueTask>? OnDisposeAsync { get; set; }
+
+        public override bool CanRead => true;
+        public override bool CanSeek => false;
+        public override bool CanWrite => true;
+        public override long Length => 0;
+        public override long Position { get; set; }
+
+        public override void Flush() { }
+        public override Task FlushAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+        public override int Read(byte[] buffer, int offset, int count) => 0;
+        public override long Seek(long offset, SeekOrigin origin) => 0;
+        public override void SetLength(long value) { }
+        public override void Write(byte[] buffer, int offset, int count) { }
+
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+            if (disposing) OnDispose?.Invoke();
+        }
+
+        public override async ValueTask DisposeAsync()
+        {
+            if (OnDisposeAsync is not null)
+                await OnDisposeAsync().ConfigureAwait(false);
+
+            await base.DisposeAsync().ConfigureAwait(false);
+        }
+    }
+
     [Fact]
     public void CanRead_ReturnsInnerCanRead()
     {
@@ -133,5 +166,27 @@ public class PrependStreamTests
         private readonly Action _onFlush;
         public MemoryStreamWithFlush(Action onFlush) => _onFlush = onFlush;
         public override void Flush() => _onFlush();
+    }
+
+    [Fact]
+    public void PrependStream_ShouldDisposeInnerStream_WhenDisposed()
+    {
+        var disposed = false;
+        var inner = new DelegatingStream { OnDispose = () => disposed = true };
+
+        using (var stream = new PrependStream(Array.Empty<byte>(), inner)) { }
+
+        disposed.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task PrependStream_ShouldDisposeInnerStreamAsync_WhenDisposedAsync()
+    {
+        var disposedAsync = false;
+        var inner = new DelegatingStream { OnDisposeAsync = () => { disposedAsync = true; return ValueTask.CompletedTask; } };
+
+        await using (var stream = new PrependStream(Array.Empty<byte>(), inner)) { }
+
+        disposedAsync.ShouldBeTrue();
     }
 }
