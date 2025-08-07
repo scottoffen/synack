@@ -1,6 +1,7 @@
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Authentication;
+using Synack.Protocol;
 
 namespace Synack.Tests;
 
@@ -71,7 +72,7 @@ public class ProtocolNegotiatorTests
     string alpnProtocol,
     ProtocolVersion expectedVersion)
     {
-        var cert = TestCertificateFactory.CreateSelfSignedServerCertificate("localhost");
+        var cert = TestCertificateFactory.Create("localhost");
         var detector = new Mock<IProtocolDetector>().Object;
         var negotiator = new ProtocolNegotiator(detector, loggerFactory: null);
 
@@ -121,7 +122,7 @@ public class ProtocolNegotiatorTests
     [Trait("Category", "Integration")]
     public async Task NegotiateAsync_ReturnsUnknown_WhenClientDoesNotSendAlpn()
     {
-        var cert = TestCertificateFactory.CreateSelfSignedServerCertificate("localhost");
+        var cert = TestCertificateFactory.Create("localhost");
         var detector = new Mock<IProtocolDetector>().Object;
         var negotiator = new ProtocolNegotiator(detector, loggerFactory: null);
 
