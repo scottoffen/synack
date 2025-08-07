@@ -1,14 +1,17 @@
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using Synack.Certificates;
 
 namespace Synack.Tests.Extensions;
 
 public class X509Certificate2ExtensionsTests
 {
+    private static readonly string subjectName = Guid.NewGuid().ToString("N");
+
     [Fact]
     public void IsValid_ReturnsTrue_WhenCertificateIsValid()
     {
-        var cert = TestCertificateFactory.Create();
+        var cert = TestCertificateFactory.Create(subjectName);
 
         cert.IsValid().ShouldBeTrue();
     }
@@ -16,7 +19,7 @@ public class X509Certificate2ExtensionsTests
     [Fact]
     public void IsValid_ReturnsFalse_WhenCertificateIsMissingPrivateKey()
     {
-        var cert = TestCertificateFactory.Create(includePrivateKey: false);
+        var cert = TestCertificateFactory.Create(subjectName, includePrivateKey: false);
 
         cert.IsValid().ShouldBeFalse();
     }
@@ -25,7 +28,7 @@ public class X509Certificate2ExtensionsTests
     public void IsValid_ReturnsFalse_WhenCertificateIsNotYetValid()
     {
         var future = DateTime.UtcNow.AddDays(1);
-        var cert = TestCertificateFactory.Create(notBefore: future);
+        var cert = TestCertificateFactory.Create(subjectName, notBefore: future);
 
         cert.IsValid().ShouldBeFalse();
     }
@@ -35,7 +38,7 @@ public class X509Certificate2ExtensionsTests
     {
         var notBefore = DateTime.UtcNow.AddDays(-10);
         var notAfter = DateTime.UtcNow.AddDays(-1); // Cert expired yesterday
-        var cert = TestCertificateFactory.Create(notBefore: notBefore, notAfter: notAfter);
+        var cert = TestCertificateFactory.Create(subjectName, notBefore: notBefore, notAfter: notAfter);
 
         cert.IsValid().ShouldBeFalse();
     }
@@ -43,7 +46,7 @@ public class X509Certificate2ExtensionsTests
     [Fact]
     public void IsValid_ReturnsFalse_WhenCertificateMissingServerAuthUsage()
     {
-        var cert = TestCertificateFactory.Create(includeServerAuth: false);
+        var cert = TestCertificateFactory.Create(subjectName, includeServerAuth: false);
 
         cert.IsValid().ShouldBeFalse();
     }
@@ -51,7 +54,7 @@ public class X509Certificate2ExtensionsTests
     [Fact]
     public void Validate_ReturnsMissingPrivateKey_WhenPrivateKeyIsMissing()
     {
-        var cert = TestCertificateFactory.Create(includePrivateKey: false);
+        var cert = TestCertificateFactory.Create(subjectName, includePrivateKey: false);
 
         var issues = cert.Validate().ToList();
 
@@ -63,7 +66,7 @@ public class X509Certificate2ExtensionsTests
     {
         var notBefore = DateTime.UtcNow.AddDays(1);               // Much safer margin
         var notAfter = notBefore.AddDays(1);                      // Ensure valid cert range
-        var cert = TestCertificateFactory.Create(notBefore: notBefore, notAfter: notAfter);
+        var cert = TestCertificateFactory.Create(subjectName, notBefore: notBefore, notAfter: notAfter);
 
         var issues = cert.Validate().ToList();
 
@@ -74,7 +77,7 @@ public class X509Certificate2ExtensionsTests
     public void Validate_ReturnsExpired_WhenCurrentDateIsAfterNotAfter()
     {
         var notAfter = DateTime.UtcNow.AddHours(-2);
-        var cert = TestCertificateFactory.Create(notAfter: notAfter);
+        var cert = TestCertificateFactory.Create(subjectName, notAfter: notAfter);
 
         var issues = cert.Validate().ToList();
 
@@ -84,7 +87,7 @@ public class X509Certificate2ExtensionsTests
     [Fact]
     public void Validate_ReturnsMissingServerAuthUsage_WhenServerAuthNotPresent()
     {
-        var cert = TestCertificateFactory.Create(includeServerAuth: false);
+        var cert = TestCertificateFactory.Create(subjectName, includeServerAuth: false);
 
         var issues = cert.Validate().ToList();
 
@@ -97,7 +100,7 @@ public class X509Certificate2ExtensionsTests
         var notBefore = DateTime.UtcNow.AddDays(2);  // Not yet valid
         var notAfter = notBefore.AddDays(1);         // Still valid range
 
-        var cert = TestCertificateFactory.Create(
+        var cert = TestCertificateFactory.Create(subjectName,
             includePrivateKey: false,
             includeServerAuth: false,
             notBefore: notBefore,
@@ -118,7 +121,7 @@ public class X509Certificate2ExtensionsTests
     [Fact]
     public void IsValid_ReturnsTrue_AndNoIssues_WhenCertificateIsValid()
     {
-        var cert = TestCertificateFactory.Create();
+        var cert = TestCertificateFactory.Create(subjectName);
 
         var result = cert.IsValid(out var issues);
 
@@ -130,7 +133,7 @@ public class X509Certificate2ExtensionsTests
     public void Validate_IssuesContainNonEmptyMessages()
     {
         var notBefore = DateTime.UtcNow.AddDays(1);
-        var cert = TestCertificateFactory.Create(includePrivateKey: false, includeServerAuth: false, notBefore: notBefore, notAfter: notBefore.AddDays(1));
+        var cert = TestCertificateFactory.Create(subjectName, includePrivateKey: false, includeServerAuth: false, notBefore: notBefore, notAfter: notBefore.AddDays(1));
 
         var issues = cert.Validate().ToList();
 
