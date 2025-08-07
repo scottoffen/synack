@@ -1,4 +1,4 @@
-namespace Synack;
+namespace Synack.Streams;
 
 /// <summary>
 /// A read-only stream wrapper that prepends a fixed byte buffer to an underlying stream.

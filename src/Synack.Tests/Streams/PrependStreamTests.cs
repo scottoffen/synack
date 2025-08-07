@@ -1,7 +1,7 @@
 using System.Text;
-using Shouldly;
+using Synack.Streams;
 
-namespace Synack.Tests.Internal.IO;
+namespace Synack.Tests.Streams;
 
 public class PrependStreamTests
 {
