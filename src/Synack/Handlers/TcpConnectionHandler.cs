@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Sockets;
+using System.Security.Claims;
 using Microsoft.Extensions.Logging;
 using Synack.Protocol;
 using Synack.Streams;
@@ -142,7 +143,7 @@ internal sealed class TcpConnectionHandler : IConnectionHandler
 
             IHttpContext context = version switch
             {
-                ProtocolVersion.Http1 => new HttpContext(), // temporary stub
+                ProtocolVersion.Http1 => new DummyHttpContext(),
                 ProtocolVersion.Http2 => throw new NotImplementedException("HTTP/2 not yet implemented."),
                 _ => throw new InvalidOperationException("Unexpected protocol version.")
             };
@@ -152,6 +153,28 @@ internal sealed class TcpConnectionHandler : IConnectionHandler
         catch (Exception ex)
         {
             _logger?.LogCritical(ex, "Error handling TCP connection.");
+        }
+    }
+
+    private class DummyHttpContext : IHttpContext
+    {
+        public EndPoint LocalEndPoint => throw new NotImplementedException();
+
+        public EndPoint RemoteEndPoint => throw new NotImplementedException();
+
+        public IHttpRequest Request => throw new NotImplementedException();
+
+        public CancellationToken RequestAborted => throw new NotImplementedException();
+
+        public IHttpResponse Response => throw new NotImplementedException();
+
+        public string TraceIdentifier => throw new NotImplementedException();
+
+        public ClaimsPrincipal User { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
+        public void OnCompleted(Func<Task> callback)
+        {
+            throw new NotImplementedException();
         }
     }
 }

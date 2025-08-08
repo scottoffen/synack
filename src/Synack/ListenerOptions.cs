@@ -1,7 +1,9 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
+using Synack.Authentication;
 using Synack.Certificates;
+using Synack.Diagnostics;
 using Synack.Exceptions;
 
 namespace Synack;
@@ -13,6 +15,15 @@ namespace Synack;
 public class ListenerOptions
 {
     private X509Certificate2? _certificate;
+
+    /// <summary>
+    /// Gets or sets the authentication handler used to process incoming HTTP requests.
+    /// </summary>
+    /// <remarks>
+    /// If <c>null</c>, no authentication will be performed and all requests will be assigned an anonymous principal.
+    /// When set, the handler will be invoked once per request to determine the user identity associated with the request.
+    /// </remarks>
+    public IAuthenticationHandler? AuthenticationHandler { get; set; }
 
     /// <summary>
     /// Gets or sets the IP address the handler should bind to when listening for incoming connections.
@@ -46,7 +57,7 @@ public class ListenerOptions
 
     /// <summary>
     /// Gets or sets the X.509 certificate used for TLS encryption.
-    /// Setting this property validates the certificate.
+    /// Setting this property sets <see cref="EnableTls"/> to true, and tells the listener to validate the certificate upon connection.
     /// </summary>
     /// <exception cref="InvalidCertificateException">Thrown if the certificate is invalid.</exception>
     public X509Certificate2? Certificate
@@ -92,9 +103,22 @@ public class ListenerOptions
     public bool EnableTls => _certificate != null;
 
     /// <summary>
-    /// Gets or sets an optional name identifying this listener.
+    /// Gets or sets the provider used to generate trace identifiers for incoming requests.
     /// </summary>
-    public string? Name { get; set; }
+    /// <remarks>
+    /// If no provider is specified, a default <see cref="GuidTraceIdentifierProvider"/> is used.
+    ///
+    /// Trace identifiers are used for logging, diagnostics, and request correlation. They are generated
+    /// once per request or connection and exposed via the <c>TraceIdentifier</c> property on the context.
+    ///
+    /// <para>
+    /// This property is assigned per listener. If multiple listeners are configured with different
+    /// <see cref="ITraceIdentifierProvider"/> instances, the format and semantics of trace identifiers
+    /// may vary across connections. To ensure consistent behavior, assign the same provider instance to
+    /// all listeners unless intentional variation is desired.
+    /// </para>
+    /// </remarks>
+    public ITraceIdentifierProvider TraceIdentifierProvider { get; set; } = new GuidTraceIdentifierProvider();
 
     /// <summary>
     /// Gets or sets the port number this listener binds to.
@@ -110,12 +134,7 @@ public class ListenerOptions
     /// If true, the listener will request and require a client certificate during the TLS handshake.
     /// </summary>
     /// <remarks>
-    /// This is only applicable for mTLS (mutual TLS) scenarios.
+    /// This enables (and requires) mTLS for the listener.
     /// </remarks>
     public bool RequireClientCertificate { get; set; } = false;
-
-    /// <summary>
-    /// Gets or sets a collection of tags associated with this listener.
-    /// </summary>
-    public List<string> Tags { get; set; } = [];
 }
