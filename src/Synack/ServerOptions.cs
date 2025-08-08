@@ -21,11 +21,6 @@ public sealed class ServerOptions
     public int MaxConcurrentRequests { get; set; } = 100;
 
     /// <summary>
-    /// Gets or sets an optional name identifying this server instance.
-    /// </summary>
-    public string? Name { get; set; }
-
-    /// <summary>
     /// Gets or sets the behavior when the request queue is full.
     /// Default is <see cref="BoundedChannelFullMode.Wait"/>.
     /// </summary>
@@ -36,15 +31,9 @@ public sealed class ServerOptions
     /// </summary>
     public TimeSpan? RequestQueueTimeout { get; set; } = null;
 
-    /// <summary>
-    /// Gets or sets a collection of tags associated with this server instance.
-    /// </summary>
-    public List<string> Tags { get; set; } = [];
-
     internal static ServerOptions Default { get; } = new ServerOptions
     {
         MaxConcurrentRequests = 100,
-        Name = "Default Server",
         QueueOverflowMode = BoundedChannelFullMode.Wait,
         RequestQueueTimeout = TimeSpan.FromSeconds(30),
         Listeners =
