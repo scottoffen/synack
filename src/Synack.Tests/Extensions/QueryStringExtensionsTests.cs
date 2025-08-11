@@ -12,7 +12,7 @@ public sealed class QueryStringExtensionsTests
     public void NullOrEmpty_ReturnsEmptyMap(string? input)
     {
         var limits = new RequestParsingLimits();
-        var map = input.ToQueryString(limits);
+        var map = input.MapToQueryString(limits);
         map.Count.ShouldBe(0);
     }
 
@@ -20,7 +20,7 @@ public sealed class QueryStringExtensionsTests
     public void Parses_SinglePair()
     {
         var q = "a=1";
-        var map = q.ToQueryString(new RequestParsingLimits());
+        var map = q.MapToQueryString(new RequestParsingLimits());
         map["a"].ShouldBe(new[] { "1" }, ignoreOrder: false);
     }
 
@@ -30,7 +30,7 @@ public sealed class QueryStringExtensionsTests
     [InlineData("=x", "", "x")]
     public void KeyWithoutValue_TreatedAsEmpty(string input, string expectedKey, string expectedValue)
     {
-        var map = input.ToQueryString(new RequestParsingLimits());
+        var map = input.MapToQueryString(new RequestParsingLimits());
         map[expectedKey].ShouldBe(new[] { expectedValue }, ignoreOrder: false);
     }
 
@@ -38,7 +38,7 @@ public sealed class QueryStringExtensionsTests
     public void LeadingQuestionMark_IsIgnored()
     {
         var q = "?a=1&b=2";
-        var map = q.ToQueryString(new RequestParsingLimits());
+        var map = q.MapToQueryString(new RequestParsingLimits());
         map["a"].ShouldBe(new[] { "1" });
         map["b"].ShouldBe(new[] { "2" });
         map.Count.ShouldBe(2);
@@ -48,7 +48,7 @@ public sealed class QueryStringExtensionsTests
     public void Decodes_PlusAndPercent()
     {
         var q = "q=hello+world&check=%E2%9C%93";
-        var map = q.ToQueryString(new RequestParsingLimits());
+        var map = q.MapToQueryString(new RequestParsingLimits());
         map["q"].ShouldBe(new[] { "hello world" });
         map["check"][0].ShouldBe("✓");
     }
@@ -57,7 +57,7 @@ public sealed class QueryStringExtensionsTests
     public void Decodes_PlusInKey_AndValue()
     {
         var q = "a+b=c+d";
-        var map = q.ToQueryString(new RequestParsingLimits());
+        var map = q.MapToQueryString(new RequestParsingLimits());
         map.ContainsKey("a b").ShouldBeTrue();
         map["a b"].ShouldBe(new[] { "c d" });
     }
@@ -66,7 +66,7 @@ public sealed class QueryStringExtensionsTests
     public void Skips_EmptySegments()
     {
         var q = "a=1&&b=2&";
-        var map = q.ToQueryString(new RequestParsingLimits());
+        var map = q.MapToQueryString(new RequestParsingLimits());
         map.Count.ShouldBe(2);
         map.ContainsKey("a").ShouldBeTrue();
         map.ContainsKey("b").ShouldBeTrue();
@@ -77,7 +77,7 @@ public sealed class QueryStringExtensionsTests
     {
         var limits = new RequestParsingLimits { MaxQueryParameterCount = 2 };
         var q = "a=1&b=2&c=3";
-        Should.Throw<RequestLimitExceededException>(() => q.ToQueryString(limits));
+        Should.Throw<RequestLimitExceededException>(() => q.MapToQueryString(limits));
     }
 
     [Fact]
@@ -85,7 +85,7 @@ public sealed class QueryStringExtensionsTests
     {
         var limits = new RequestParsingLimits { MaxQueryParameterCount = 2 };
         var q = "a=1&a=2&b=3";
-        var map = q.ToQueryString(limits);
+        var map = q.MapToQueryString(limits);
         map.Count.ShouldBe(2);
         map["a"].ShouldBe(new[] { "1", "2" }, ignoreOrder: false);
         map["b"].ShouldBe(new[] { "3" }, ignoreOrder: false);
@@ -96,6 +96,6 @@ public sealed class QueryStringExtensionsTests
     {
         var limits = new RequestParsingLimits { MaxQueryValuesPerKey = 2 };
         var q = "id=1&id=2&id=3";
-        Should.Throw<RequestLimitExceededException>(() => q.ToQueryString(limits));
+        Should.Throw<RequestLimitExceededException>(() => q.MapToQueryString(limits));
     }
 }

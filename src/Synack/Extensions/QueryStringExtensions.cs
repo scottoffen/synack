@@ -6,7 +6,7 @@ namespace Synack.Extensions;
 
 internal static class QueryStringExtensions
 {
-    public static ReadOnlyQueryString ToQueryString(this string? query, RequestParsingLimits? limits)
+    public static ReadOnlyQueryString MapToQueryString(this string? query, RequestParsingLimits? limits)
     {
         var builder = new QueryStringBuilder();
 
