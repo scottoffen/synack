@@ -5,6 +5,10 @@ namespace Synack.Collections;
 /// <summary>
 /// Builder for HTTP header fields - case-insensitive keys, optional trimming helpers.
 /// </summary>
+/// <remarks>
+/// Thread safety: instances of this type are <b>not thread-safe</b>.
+/// Use a separate instance per request and do not share across threads.
+/// </remarks>
 [ExcludeFromCodeCoverage]
 internal sealed class HttpHeaderBuilder : MultiMapBuilder
 {

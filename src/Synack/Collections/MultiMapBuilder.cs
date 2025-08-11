@@ -3,6 +3,10 @@ namespace Synack.Collections;
 /// <summary>
 /// Small, allocation-aware builder for multi-value maps. Use a type-specific builder to get the right comparer.
 /// </summary>
+/// <remarks>
+/// Thread safety: instances of this type are <b>not thread-safe</b>.
+/// Use a separate instance per request and do not share across threads.
+/// </remarks>
 internal abstract class MultiMapBuilder
 {
     protected readonly Dictionary<string, List<string>> Inner;
