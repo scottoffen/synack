@@ -15,5 +15,5 @@ internal sealed class QueryStringBuilder : MultiMapBuilder
     public QueryStringBuilder()
         : base(StringComparer.Ordinal, 8) { }
 
-    public ReadOnlyQueryString Build(bool sortKeys = false) => new ReadOnlyQueryString(Inner);
+    public QueryString Build(bool sortKeys = false) => new QueryString(Inner);
 }

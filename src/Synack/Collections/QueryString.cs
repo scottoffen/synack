@@ -10,8 +10,8 @@ namespace Synack.Collections;
 /// and the original insertion order is preserved for enumeration.
 /// </remarks>
 [ExcludeFromCodeCoverage]
-public sealed class ReadOnlyQueryString : ReadOnlyMultiMap
+public sealed class QueryString : ReadOnlyMultiMap
 {
-    public ReadOnlyQueryString(Dictionary<string, List<string>> source)
+    public QueryString(Dictionary<string, List<string>> source)
         : base(source, StringComparer.Ordinal) { }
 }

@@ -10,8 +10,8 @@ namespace Synack.Collections;
 /// and the original insertion order is preserved for enumeration.
 /// </remarks>
 [ExcludeFromCodeCoverage]
-public sealed class ReadOnlyCookies : ReadOnlyMultiMap
+public sealed class RequestCookies : ReadOnlyMultiMap
 {
-    public ReadOnlyCookies(Dictionary<string, List<string>> source)
+    public RequestCookies(Dictionary<string, List<string>> source)
         : base(source, StringComparer.Ordinal) { }
 }

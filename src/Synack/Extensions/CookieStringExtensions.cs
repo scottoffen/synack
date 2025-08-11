@@ -7,7 +7,7 @@ namespace Synack.Extensions;
 
 internal static class CookieStringExtensions
 {
-    public static ReadOnlyCookies MapToCookies(this string? header, RequestParsingLimits? limits)
+    public static RequestCookies MapToCookies(this string? header, RequestParsingLimits? limits)
     {
         var builder = new CookieBuilder();
         if (string.IsNullOrEmpty(header)) return builder.Build();

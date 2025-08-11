@@ -10,8 +10,8 @@ namespace Synack.Collections;
 /// and the collection is sorted by key for deterministic enumeration order.
 /// </remarks>
 [ExcludeFromCodeCoverage]
-public sealed class ReadOnlyHttpHeaders : ReadOnlyMultiMap
+public sealed class RequestHeaders : ReadOnlyMultiMap
 {
-    public ReadOnlyHttpHeaders(Dictionary<string, List<string>> source)
+    public RequestHeaders(Dictionary<string, List<string>> source)
         : base(source, StringComparer.OrdinalIgnoreCase, sortKeys: true) { }
 }

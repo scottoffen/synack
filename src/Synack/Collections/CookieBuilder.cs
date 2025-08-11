@@ -15,5 +15,5 @@ internal sealed class CookieBuilder : MultiMapBuilder
     public CookieBuilder()
         : base(StringComparer.Ordinal, 8) { }
 
-    public ReadOnlyCookies Build(bool sortKeys = false) => new ReadOnlyCookies(Inner);
+    public RequestCookies Build(bool sortKeys = false) => new RequestCookies(Inner);
 }

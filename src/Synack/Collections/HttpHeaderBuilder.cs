@@ -18,5 +18,5 @@ internal sealed class HttpHeaderBuilder : MultiMapBuilder
     public void AddTrimmed(string key, string value)
         => Add(key, value?.Trim() ?? string.Empty);
 
-    public ReadOnlyHttpHeaders Build(bool sortKeys = true) => new ReadOnlyHttpHeaders(Inner);
+    public RequestHeaders Build(bool sortKeys = true) => new RequestHeaders(Inner);
 }
