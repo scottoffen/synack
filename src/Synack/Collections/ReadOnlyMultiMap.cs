@@ -1,6 +1,8 @@
 using System.Runtime.CompilerServices;
 #if NET6_0_OR_GREATER
 using System.Runtime.InteropServices; // CollectionsMarshal
+using System.Diagnostics.CodeAnalysis;
+
 #endif
 #if NET8_0_OR_GREATER
 using System.Collections.Frozen;
@@ -111,5 +113,6 @@ public abstract class ReadOnlyMultiMap : IReadOnlyDictionary<string, IReadOnlyLi
         for (var i = 0; i < _entries.Length; i++) yield return _entries[i];
     }
 
+    [ExcludeFromCodeCoverage]
     System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
 }
