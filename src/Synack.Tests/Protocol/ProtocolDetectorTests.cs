@@ -3,7 +3,7 @@ using Synack.Protocol;
 
 namespace Synack.Tests;
 
-public class ProtocolDetectorTests
+public sealed class ProtocolDetectorTests
 {
     private static readonly IProtocolDetector _protocolDetector = new ProtocolDetector(null);
 

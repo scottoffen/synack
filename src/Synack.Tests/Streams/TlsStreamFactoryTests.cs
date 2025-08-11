@@ -8,7 +8,7 @@ using Synack.Streams;
 namespace Synack.Tests.Streams;
 
 [Trait("Category", "Integration")]
-public class TlsStreamFactoryTests
+public sealed class TlsStreamFactoryTests
 {
     [Fact]
     public async Task AuthenticateAsync_Succeeds_WhenClientCertNotRequired()

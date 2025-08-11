@@ -6,7 +6,7 @@ using Synack.Protocol;
 
 namespace Synack.Tests.Handlers;
 
-public class TcpConnectionHandlerUnitTests
+public sealed class TcpConnectionHandlerUnitTests
 {
     private readonly ListenerOptions _options = new() { Port = 0 };
     private readonly Mock<IProtocolNegotiator> _negotiator = new();

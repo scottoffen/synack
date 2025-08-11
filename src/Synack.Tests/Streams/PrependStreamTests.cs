@@ -3,7 +3,7 @@ using Synack.Streams;
 
 namespace Synack.Tests.Streams;
 
-public class PrependStreamTests
+public sealed class PrependStreamTests
 {
     private class DelegatingStream : Stream
     {
