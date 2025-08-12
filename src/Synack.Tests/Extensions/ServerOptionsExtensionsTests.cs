@@ -3,7 +3,7 @@ using Synack.Exceptions;
 
 namespace Synack.Tests.Extensions;
 
-public class ServerOptionsExtensionsTests
+public sealed class ServerOptionsExtensionsTests
 {
     [Fact]
     public void Validate_ShouldReturnEmpty_WhenDefaultsAreUsed()

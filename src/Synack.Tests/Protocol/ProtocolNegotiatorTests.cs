@@ -6,7 +6,7 @@ using Synack.Streams;
 
 namespace Synack.Tests;
 
-public class ProtocolNegotiatorTests
+public sealed class ProtocolNegotiatorTests
 {
     [Fact]
     public async Task NegotiateAsync_ReturnsHttp1_WhenDetectorReturnsHttp1()

@@ -4,7 +4,7 @@ using Synack.Certificates;
 
 namespace Synack.Tests.Extensions;
 
-public class X509Certificate2ExtensionsTests
+public sealed class X509Certificate2ExtensionsTests
 {
     private static readonly string subjectName = Guid.NewGuid().ToString("N");
 

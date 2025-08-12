@@ -9,7 +9,7 @@ using Synack.Protocol;
 namespace Synack.Tests.Handlers;
 
 [Trait("Category", "Integration")]
-public class TcpConnectionHandlerIntegrationTests
+public sealed class TcpConnectionHandlerIntegrationTests
 {
     private class FakeNegotiator : IProtocolNegotiator
     {
