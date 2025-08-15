@@ -46,7 +46,7 @@ public class ServerOptionsTests
         ReferenceEquals(view1, view2).ShouldBeFalse(); // property constructs a wrapper per call in current implementation
         view2.Count.ShouldBe(1);
         view2[0].Port.ShouldBe(1234);
-        view2[0].Prefixes.ShouldContain("/a");
+        view2[0].Prefixes.ShouldContain("/a/");
     }
 
     [Fact]

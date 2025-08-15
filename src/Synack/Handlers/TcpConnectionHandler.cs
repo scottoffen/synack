@@ -120,7 +120,7 @@ internal sealed class TcpConnectionHandler : IConnectionHandler
             await using var networkStream = client.GetStream();
             Stream stream = networkStream;
 
-            if (_options.EnableTls)
+            if (_options.TlsEnabled)
             {
                 stream = await _tlsStreamFactory
                     .AuthenticateAsync(stream, cancellationToken)

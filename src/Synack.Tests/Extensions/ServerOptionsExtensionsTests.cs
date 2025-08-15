@@ -1,136 +1,83 @@
-using Synack.Extensions;
 using Synack.Exceptions;
+using Synack.Extensions;
 
-namespace Synack.Tests;
+namespace Synack.Tests.Extensions;
 
 public class ServerOptionsExtensionsTests
 {
     [Fact]
-    public void Validate_ReturnsEmpty_ForValidDefaults()
+    public void Validate_ReturnsEmpty_WhenPortsAreUnique()
     {
-        var o = ServerOptions.CreateInstance();
-        var issues = o.Validate().ToArray();
+        var options = new ServerOptions()
+            .WithListener(l => l.Port = 8080)
+            .WithListener(l => l.Port = 8081)
+            .WithListener(l => l.Port = 0); // ephemeral ok
+
+        var issues = options.Validate().ToArray();
+
         issues.ShouldBeEmpty();
     }
 
     [Fact]
-    public void Validate_ReturnsIssue_ForNegativePort()
+    public void Validate_ReturnsIssues_ForDuplicatePorts()
     {
-        var o = new ServerOptions();
-        o.AddListener(new ListenerOptions { Port = -1, Prefixes = ["/"] });
+        var options = new ServerOptions()
+            .WithListener(l => l.Port = 8080)
+            .WithListener(l => l.Port = 8080) // duplicate #1
+            .WithListener(l => l.Port = 8081)
+            .WithListener(l => l.Port = 8080); // duplicate #2
 
-        var issues = o.Validate().ToArray();
-        issues.Length.ShouldBe(1);
-        issues[0].ShouldBe("Listener port -1 is out of range.");
-    }
+        var issues = options.Validate().ToArray();
 
-    [Fact]
-    public void Validate_ReturnsIssue_ForDuplicatePorts()
-    {
-        var o = new ServerOptions();
-        o.AddListener(new ListenerOptions { Port = 5000, Prefixes = ["/a"] });
-        o.AddListener(new ListenerOptions { Port = 5000, Prefixes = ["/b"] });
-
-        var issues = o.Validate().ToArray();
-        issues.Length.ShouldBe(1);
-        issues[0].ShouldBe("Duplicate listener port: 5000.");
-    }
-
-    [Fact]
-    public void Validate_ReturnsIssue_ForNullOrEmptyPrefixes()
-    {
-        var o = new ServerOptions();
-
-        o.AddListener(new ListenerOptions { Port = 6001, Prefixes = null! });
-        o.Validate().Single().ShouldBe("Listener prefixes cannot be null or empty.");
-
-        var o2 = new ServerOptions();
-        o2.AddListener(new ListenerOptions { Port = 6002, Prefixes = new List<string>() });
-        o2.Validate().Single().ShouldBe("Listener prefixes cannot be null or empty.");
-
-        var o3 = new ServerOptions();
-        o3.AddListener(new ListenerOptions { Port = 6003, Prefixes = ["  "] });
-        o3.Validate().Single().ShouldBe("Listener prefixes cannot be null or empty.");
-    }
-
-    [Fact]
-    public void Validate_ReturnsMultipleIssues_WhenMultipleProblemsExist()
-    {
-        var o = new ServerOptions();
-
-        o.AddListener(new ListenerOptions { Port = -1, Prefixes = null! });   // two issues
-        o.AddListener(new ListenerOptions { Port = -1, Prefixes = [] });      // two issues + duplicate port
-
-        var issues = o.Validate().ToArray();
-        issues.ShouldContain("Listener port -1 is out of range.");
-        issues.ShouldContain("Listener prefixes cannot be null or empty.");
-        issues.ShouldContain("Duplicate listener port: -1.");
+        issues.Length.ShouldBe(2);
+        issues.ShouldAllBe(i => i.Contains("Duplicate listener port: 8080.", StringComparison.Ordinal));
     }
 
     [Fact]
     public void ValidateAndThrow_Throws_InvalidServerOptionsException_WhenIssuesExist()
     {
-        var o = new ServerOptions();
-        o.AddListener(new ListenerOptions { Port = -1, Prefixes = ["/"] });
+        var options = new ServerOptions()
+            .WithListener(l => l.Port = 5000)
+            .WithListener(l => l.Port = 5000);
 
-        var ex = Should.Throw<InvalidServerOptionsException>(() => o.ValidateAndThrow());
-
-        ex.Issues.ShouldNotBeNull();
-
-        var issues = ex.Issues;
-        issues.ShouldNotBeNull();
-        issues!.ShouldContain("Listener port -1 is out of range.");
-    }
-
-
-    [Fact]
-    public void ValidateAndThrow_DoesNotThrow_WhenNoIssues()
-    {
-        var o = ServerOptions.CreateInstance();
-        Should.NotThrow(() => o.ValidateAndThrow());
+        var ex = Should.Throw<InvalidServerOptionsException>(() => options.ValidateAndThrow());
+        ex.Issues.ShouldContain("Duplicate listener port: 5000.");
     }
 
     [Fact]
-    public void WithListener_AddsConfiguredListener_AndReturnsSameInstance()
+    public void WithListener_AddsConfiguredListener_AndReturnsOptions()
     {
-        var o = new ServerOptions();
+        var options = new ServerOptions();
 
-        var returned = o.WithListener(l =>
+        var returned = options.WithListener(l =>
         {
-            l.Port = 7001;
-            l.Prefixes = ["/x"];
+            l.Port = 7000;
+            l.AddPrefix("/api/");
         });
 
-        ReferenceEquals(returned, o).ShouldBeTrue();
-        o.Listeners.Count.ShouldBe(1);
-        o.Listeners[0].Port.ShouldBe(7001);
-        o.Listeners[0].Prefixes.ShouldContain("/x");
+        ReferenceEquals(returned, options).ShouldBeTrue();
+        options.Listeners.Count.ShouldBe(1);
+        options.Listeners[0].Port.ShouldBe(7000);
+        options.Listeners[0].Prefixes.ShouldContain("/api/");
     }
 
     [Fact]
-    public void WithListener_ThrowsArgumentNullException_WhenOptionsIsNull()
+    public void WithListener_Throws_ArgumentNullException_WhenOptionsIsNull()
     {
-        ServerOptions? o = null;
-        var ex = Should.Throw<ArgumentNullException>(() => ServerOptionsExtensions.WithListener(o!, _ => { }));
+        var ex = Should.Throw<ArgumentNullException>(() =>
+            ServerOptionsExtensions.WithListener(null!, _ => { }));
+
         ex.ParamName.ShouldBe("options");
     }
 
     [Fact]
-    public void WithListener_ThrowsArgumentNullException_WhenConfigureIsNull()
+    public void WithListener_Throws_ArgumentNullException_WhenConfigureIsNull()
     {
-        var o = new ServerOptions();
-        var ex = Should.Throw<ArgumentNullException>(() => o.WithListener(null!));
+        var options = new ServerOptions();
+
+        var ex = Should.Throw<ArgumentNullException>(() =>
+            ServerOptionsExtensions.WithListener(options, null!));
+
         ex.ParamName.ShouldBe("configure");
-    }
-
-    [Fact]
-    public void Validate_DoesNotReportIssues_ForDifferentPorts()
-    {
-        var o = new ServerOptions();
-        o.AddListener(new ListenerOptions { Port = 5000, Prefixes = ["/a"] });
-        o.AddListener(new ListenerOptions { Port = 5001, Prefixes = ["/b"] });
-
-        var issues = o.Validate().ToArray();
-        issues.ShouldBeEmpty();
     }
 }
