@@ -7,6 +7,8 @@ namespace Synack.Extensions;
 /// </summary>
 public static class ServerOptionsExtensions
 {
+    internal static readonly string MessageDuplicatePort = "Duplicate listener port: {0}.";
+
     /// <summary>
     /// Validates the specified <see cref="ServerOptions"/> and throws an exception if any validation issues are found.
     /// </summary>
@@ -32,20 +34,28 @@ public static class ServerOptionsExtensions
 
         foreach (var listener in options.Listeners)
         {
-            if (listener.Port < 0 || listener.Port > int.MaxValue)
-            {
-                yield return $"Listener port {listener.Port} is out of range.";
-            }
-
             if (!ports.Add(listener.Port))
             {
-                yield return $"Duplicate listener port: {listener.Port}.";
-            }
-
-            if (string.IsNullOrWhiteSpace(listener.Prefixes?.FirstOrDefault()))
-            {
-                yield return "Listener prefixes cannot be null or empty.";
+                yield return string.Format(MessageDuplicatePort, listener.Port);
             }
         }
+    }
+
+    /// <summary>
+    /// Adds a new listener to the server options using the specified configuration action.
+    /// </summary>
+    /// <param name="options"></param>
+    /// <param name="configure"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentNullException"></exception>
+    public static ServerOptions WithListener(this ServerOptions options, Action<ListenerOptions> configure)
+    {
+        if (options == null) throw new ArgumentNullException(nameof(options));
+        if (configure == null) throw new ArgumentNullException(nameof(configure));
+
+        var listener = new ListenerOptions();
+        configure(listener);
+        options.AddListener(listener);
+        return options;
     }
 }

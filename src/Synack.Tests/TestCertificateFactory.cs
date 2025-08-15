@@ -37,4 +37,3 @@ public static class TestCertificateFactory
         return new X509Certificate2(cert.Export(X509ContentType.Pfx));
     }
 }
-
