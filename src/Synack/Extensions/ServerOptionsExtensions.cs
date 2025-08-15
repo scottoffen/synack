@@ -48,4 +48,22 @@ public static class ServerOptionsExtensions
             }
         }
     }
+
+    /// <summary>
+    /// Adds a new listener to the server options using the specified configuration action.
+    /// </summary>
+    /// <param name="options"></param>
+    /// <param name="configure"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentNullException"></exception>
+    public static ServerOptions WithListener(this ServerOptions options, Action<ListenerOptions> configure)
+    {
+        if (options == null) throw new ArgumentNullException(nameof(options));
+        if (configure == null) throw new ArgumentNullException(nameof(configure));
+
+        var listener = new ListenerOptions();
+        configure(listener);
+        options.AddListener(listener);
+        return options;
+    }
 }
