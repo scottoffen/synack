@@ -1,0 +1,39 @@
+name: 📖 Documentation update
+description: Fix or improve documentation (READMEs or Docusaurus).
+labels: ["documentation", "needs-triage"]
+assignees: []
+body:
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: Pre-flight
+      options:
+        - label: I checked the latest published docs and the /docs source.
+          required: true
+
+  - type: checkboxes
+    id: formatting
+    attributes:
+      label: Style/formatting
+      options:
+        - label: I will follow the project's documentation style and clarity guidelines.
+          required: true
+
+  - type: textarea
+    id: location
+    attributes:
+      label: Affected pages/sections
+      description: Link the page(s) or file paths that need changes.
+      placeholder: /docs/getting-started.md
+
+  - type: textarea
+    id: change
+    attributes:
+      label: Proposed change
+      description: Be clear and concise. Include before/after snippets if helpful.
+      render: markdown
+      placeholder: |
+        **Before**
+        ...
+        **After**
+        ...

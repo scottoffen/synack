@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📘 Synack Documentation
+    url: https://scottoffen.github.io/synack
+    about: Start here. Many questions are answered in the official docs.
+  - name: 💬 Community Discussions
+    url: https://github.com/scottoffen/synack/discussions
+    about: Propose ideas, ask how-to questions, and get community help.
+  - name: 🙋 StackOverflow #synack
+    url: https://stackoverflow.com/questions/tagged/synack?sort=newest
+    about: Ask/answer usage questions with the synack tag.
