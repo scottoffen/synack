@@ -69,7 +69,6 @@ pwsh ./test-coverage.ps1
 
 > [!NOTE]
 > This is a [Powershell](https://learn.microsoft.com/en-us/powershell/) script. You must have Powershell installed to run this command.
-> The command depends on the global installation of the dotnet tool [ReportGenerator](https://www.nuget.org/packages/ReportGenerator).
 
 ## License
 
