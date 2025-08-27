@@ -1,13 +1,13 @@
-# Synack
+# <img src="./src//Synack/icon.png" width=25> Synack
 
 **noun**  
 **/snæk/**
 
 **1.** A lightweight, high-performance TCP listener and HTTP parser designed as a modern replacement for `HttpListener`.  
-&emsp;*"When you've outgrown HttpListener but not grown into Kestrel - that's when you use Synack"*
+&emsp;*"We've outgrown HttpListener, but ASP.NET isn't an option - so glad we found Synack!"*
 
 **2.** (informal) A satisfying, bite-sized solution to heavyweight problems in HTTP handling.  
-&emsp;*"When all you need is simple, fast, and HTTP - Synack satisfies."*
+&emsp;*"When you want fast and simple - Synack satisfies."*
 
 **Origin:**  
 A portmanteau of *SYN* and *ACK*, the opening handshake packets of TCP communication - pronounced like *snack*, because it's just that good.
